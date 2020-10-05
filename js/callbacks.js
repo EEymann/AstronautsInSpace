@@ -29,3 +29,9 @@ function generateHTML(data) {
 }
 
 btn.addEventListener('click', () => getJSON(astrosUrl));
+
+//Call the getJSON function and pass it the URL to the open notify API.
+getJSON(astrosUrl);
+
+//Create an event listener for the button to invoke the getJSON function
+btn.addEventListener('click', () => getJSON(astrosUrl));
