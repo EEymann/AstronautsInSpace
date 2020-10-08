@@ -4,31 +4,32 @@ const peopleList = document.getElementById('people');
 const btn = document.querySelector('button');
 
 // Handle all fetch requests
-// This function is going to first make a fetch request to the open notify API,
-// then use those results to make fetch requests to the Wikipedia API.
-//The function takes the parameter URL, for the url to fetch.
-//In the body of the function, we'll start by making the first network request using the fetch method.
-//It will be to the open notify API to get the names of the people in space.
-//Fetch returns a promise. The await keyword waits for a resolved promise returned by fetch.
-//Then it's going to get the fulfillment value out of the promise and assign it to peopleResponse.
-// const peopleJSON = peopleResponse.json();  parses the response from Fetch to JSON.
-async function getPeopleInSpace(url) { //fetches url
-  const peopleResponse = await fetch(url); //await the response,
-  const peopleJSON = await peopleResponse.json(); //read the response and await the JSON.
+  async function getJSON(url) {
+    try {
+      const response = await fetch(url);
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  }
 
-  const profiles = peopleJSON.people.map( async person => {
-    const craft = person.craft;
-    const profileResponse = await fetch(wikiUrl + person.name);
-    const profileJSON = await profileResponse.json();
 
-    return { ...profileJSON, craft};
+async function getPeopleInSpace(url) {
+  const peopleJSON = await getJSON(url);
+
+  const profiles = peopleJSON.people.map( async (person) => {
+  const craft = person.craft;
+  const profileJSON = await getJSON(wikiUrl + person.name);
+
+    return { ...profileJSON, craft };
   });
     return Promise.all(profiles);
 }
 
-console.log(getPeopleInSpace(astrosUrl));
+
 
 // Generate the markup for each profile
+
 function generateHTML(data) {
   data.map( person => {
     const section = document.createElement('section');
@@ -44,9 +45,14 @@ function generateHTML(data) {
 }
 
 btn.addEventListener('click', (event) => {
-  event.target.textContent = "Loading...";
+  event.target.textContent = 'Loading...';
 
   getPeopleInSpace(astrosUrl)
   .then(generateHTML)
+  .catch( e => {
+    peopleList.innerHTML = '<h3>Something went wrong!</h3>';
+    console.error(e);
+  })
   .finally( () => event.target.remove() )
+
 });
